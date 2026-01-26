@@ -1,0 +1,56 @@
+# Qullamaggie Trend-Following System Configuration
+
+strategy:
+  name: "Qullamaggie Breakout"
+  version: "1.0.0"
+  description: "Momentum-based breakout strategy with tight stops and trailing exits"
+
+# Data Configuration
+data:
+  source: "GoldenOpp.GDX_GLD_Mining_Stocks_Prices"
+  start_date: null  # null = use all available data
+  end_date: null
+  symbols: null  # null = use all symbols, or list specific ones
+  
+# Trend Filter Parameters
+trend_filter:
+  enabled: true
+  sma_period: 50
+  timeframe: "daily"
+  
+# Entry Signal Parameters
+entry:
+  breakout_period: 5  # Number of bars for high calculation
+  timeframe: "daily"  # "daily" or "intraday" (if available)
+  
+# Exit Signal Parameters
+exit:
+  method: "trailing_sma"  # "trailing_sma" or "fixed_stop"
+  trailing_sma_period: 10  # Primary trailing stop
+  alternative_sma_period: 20  # Alternative (set in strategy)
+  
+# Position Sizing
+position_sizing:
+  method: "equal_weight"  # "equal_weight", "volatility_adjusted", "kelly"
+  size_pct: 0.10  # 10% of capital per position
+  max_positions: 10
+  
+# Risk Management
+risk:
+  initial_capital: 100000
+  fees: 0.001  # 0.1% per trade
+  slippage: 0.001  # 0.1% per trade
+  max_position_size: 0.20  # Maximum 20% in single position
+  
+# Optimization Parameters (for grid search)
+optimization:
+  breakout_periods: [3, 5, 7, 10]
+  trend_sma_periods: [20, 50, 100, 200]
+  trailing_sma_periods: [10, 20, 30, 50]
+  
+# Performance Reporting
+reporting:
+  benchmark_symbol: "GDX"
+  output_directory: "results"
+  generate_tearsheet: true
+  save_trades: true

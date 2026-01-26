@@ -1,0 +1,39 @@
+Qullamaggie Breakout System - Analysis Notes
+==============================================
+
+From TradingView Script: https://www.tradingview.com/script/cDCAPrd1-Qullamaggie-Breakout/
+
+STRATEGY DESCRIPTION (from page):
+---------------------------------
+The intent of this strategy is to buy breakouts with a tight stop on smaller timeframes in the direction of the longer term trend. Default longer term trend is the daily, but the user can choose any timeframe to use for the SMAs (which act as filters and trailing stops).
+
+Exit the trade using a trailing stop of a close below either the 10 MA or 20 MA (user choice) on that larger timeframe as the position moves in your favor (i.e. whenever position price rises above the MA). This is one area where this script could use a little work or some human intervention - when the trade is entered right in the vicinity of the moving averages, you get some whipsaw. Not sure how to avoid that at this point though if you want to look at those longer term moving averages as your exit criteria.
+
+Option of using daily ATR as a measure of finding contracting ranges and ensuring a decent risk/reward. (If the difference between the breakout point and your stop level is below a certain % of ATR, it could possibly find those consolidating periods.)
+
+VISIBLE CODE ELEMENTS (from screenshots):
+-----------------------------------------
+- Strategy name: "Qullamaggie Breakout"
+- Uses overlay=true
+- Initial capital: 10000
+- Currency: USD
+- Default qty type: strategy.percent_of_equity
+- Default qty value: 100
+
+INPUTS:
+- Lookback Period for Swing High (default = 5)
+- Lookback period for defining the breakout level
+- Lookback Bars for Stop Level (default = 5)
+- Initial stop placement is the lowest low this many bars back
+- Allows for tighter stop placement than referencing swing lows
+
+MOVING AVERAGES:
+- maType (default = "SMA", options: "SMA", "EMA")
+- 1st Moving Average Length (default = 10)
+- 2nd Moving Average Length (default = 20)
+- 3rd Moving Average Length (default = 50)
+- useMAFilter (default = true)
+- "Signals will be ignored when price is under this slowest moving average"
+- trailWithMA (default = "1st Moving Average", options: "1st Moving Average", "2nd Moving Average")
+
+The script is 124 lines total.

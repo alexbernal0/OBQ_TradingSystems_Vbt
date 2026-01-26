@@ -1,0 +1,29 @@
+# Core dependencies for OBQ Trading Systems with VectorBT
+
+# Data handling
+pandas>=2.0.0
+numpy>=1.24.0
+duckdb>=0.9.0
+
+# VectorBT
+vectorbt>=0.26.0
+
+# Visualization
+plotly>=5.17.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Performance analysis
+scipy>=1.11.0
+statsmodels>=0.14.0
+
+# Configuration
+pyyaml>=6.0
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0

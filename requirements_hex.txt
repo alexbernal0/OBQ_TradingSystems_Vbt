@@ -1,0 +1,11 @@
+# Additional dependencies for Hex.tech environment
+
+# All core dependencies from requirements.txt
+-r requirements.txt
+
+# Hex-specific enhancements
+ipywidgets>=8.1.0
+jupyter>=1.0.0
+
+# Additional visualization for Hex
+kaleido>=0.2.1

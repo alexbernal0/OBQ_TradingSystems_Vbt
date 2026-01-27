@@ -1,200 +1,118 @@
-# OBQ Trading Systems with VectorBT
+# OBQ Trading Systems - VectorBT Framework
 
-A professional, scalable framework for developing, backtesting, and analyzing systematic trading strategies using VectorBT. Optimized for Hex.tech notebook environments with comprehensive helper functions, performance reporting, and knowledge base.
+This repository provides a professional, production-ready framework for developing, backtesting, and analyzing quantitative trading strategies using the **VectorBT** library.
 
-## 🎯 Project Overview
+## Overview
 
-This repository provides a complete infrastructure for quantitative trading system development with a focus on:
+The framework is designed for rapid strategy development and robust performance analysis. It includes:
 
-- **Speed**: Leveraging VectorBT's vectorized architecture for 1000x faster backtesting
-- **Scalability**: Multi-symbol, multi-strategy testing across decades of data
-- **Reproducibility**: Standardized templates, helpers, and workflows
-- **Hex.tech Integration**: Optimized for notebook-based development and reporting
+- **Modular Architecture**: Reusable helper functions for data loading, signal generation, and performance reporting.
+- **Comprehensive Performance Tearsheets**: A "better than QuantStats" reporting module with 100+ metrics, benchmark comparisons, and crisis analysis.
+- **Hex.tech Optimized**: Designed for seamless integration with Hex.tech notebooks, including data connections and modular file uploads.
+- **Strategy Templates**: Pre-built templates for single symbol backtests, multi-symbol optimization, and full portfolio strategies.
+- **VectorBT Knowledge Base**: A collection of best practices, code snippets, and troubleshooting guides for VectorBT.
+
+## Key Features
+
+- **High-Speed Backtesting**: Leverages VectorBT’s vectorized architecture for 1000x faster backtesting.
+- **Scalability**: Multi-symbol, multi-strategy testing across decades of data.
+- **Reproducibility**: Standardized templates, helpers, and workflows.
+- **Comprehensive Reporting**: 100+ performance metrics including Ed Seykota’s Lake Ratio.
 
 ## 🚀 Quick Start
 
-### Installation
+### 1. Clone the Repository
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/OBQ_TradingSystems_Vbt.git
+git clone https://github.com/alexbernal0/OBQ_TradingSystems_Vbt.git
 cd OBQ_TradingSystems_Vbt
-
-# Install dependencies
-pip install -r requirements.txt
-
-# For Hex.tech environments
-pip install -r requirements_hex.txt
 ```
 
-### Basic Usage
+### 2. Install Dependencies
+
+```bash
+# For local development
+pip install -r requirements.txt
+
+# For Hex.tech environments (use in setup cell)
+!pip install -q vectorbt pandas numpy plotly scipy statsmodels
+```
+
+### 3. Run a Backtest in Hex.tech
+
+**Step 1: Upload `qullamaggie_tearsheet.py`**
+- Go to the "Files" section in your Hex.tech project.
+- Upload the `src/performance_reporting/qullamaggie_tearsheet.py` file.
+
+**Step 2: Run the Setup Cell**
+- Use the code from `strategies/qullamaggie/hex_setup_cell.py` to connect to MotherDuck and load data.
+
+**Step 3: Run the Backtest Cell**
+- Use the code from `strategies/qullamaggie/hex_cell_qullamaggie_condensed.py` to run the backtest and generate the report.
 
 ```python
-import vectorbt as vbt
-from src.data.loaders import load_from_motherduck
-from src.data.transformers import pivot_to_wide_format
+# In a Hex.tech cell
 
-# Load data
-df = load_from_motherduck("GoldenOpp.GDX_GLD_Mining_Stocks_Prices")
+# Import the tearsheet function from the uploaded file
+from qullamaggie_tearsheet import run_comprehensive_tearsheet
 
-# Transform to VectorBT format
-close_prices = pivot_to_wide_format(df, 'Close')
-
-# Run a simple backtest
-fast_ma = vbt.MA.run(close_prices, 10)
-slow_ma = vbt.MA.run(close_prices, 50)
-
-entries = fast_ma.ma_crossed_above(slow_ma)
-exits = fast_ma.ma_crossed_below(slow_ma)
-
-pf = vbt.Portfolio.from_signals(close_prices, entries, exits, init_cash=100000)
-print(pf.stats())
+# Run the comprehensive tearsheet
+results = run_comprehensive_tearsheet(
+    df_all_data=df_all_data, # Loaded in setup cell
+    symbol=\'GLD\',
+    trend_sma=50,
+    breakout_period=5,
+    trailing_sma=10,
+    initial_capital=100000
+)
 ```
 
 ## 📁 Repository Structure
 
 ```
 OBQ_TradingSystems_Vbt/
-├── src/                      # Core library code
-│   ├── data/                 # Data loading and transformation
+├── src/
+│   ├── data/                 # Data loading & transformation
 │   ├── indicators/           # Custom indicators
-│   ├── signals/              # Entry/exit signal generation
-│   ├── portfolio/            # Position sizing and risk management
-│   ├── performance/          # Metrics, tables, and tearsheets
-│   ├── backtesting/          # Backtesting engine and optimization
+│   ├── signals/              # Signal generation
+│   ├── portfolio/            # Position sizing & risk management
+│   ├── performance_reporting/ # NEW: Modular tearsheets & metrics
 │   └── utils/                # Helper functions
 │
-├── strategies/               # Trading strategy implementations
-│   ├── qullamaggie/          # Qullamaggie trend-following system
+├── strategies/
+│   ├── qullamaggie/          # Qullamaggie strategy + Hex cells
 │   └── template/             # Template for new strategies
 │
 ├── VectorBT_Knowledge/       # Comprehensive VectorBT documentation
-│   ├── fundamentals/         # Architecture and concepts
-│   ├── data/                 # Data preparation guides
-│   ├── signals/              # Signal generation patterns
-│   ├── portfolio/            # Portfolio construction
-│   ├── performance/          # Performance analysis
-│   ├── optimization/         # Parameter optimization
-│   └── troubleshooting/      # Common issues and solutions
-│
-├── notebooks/                # Jupyter notebooks
-│   ├── examples/             # Educational examples
-│   ├── research/             # Exploratory analysis
-│   └── hex_templates/        # Hex.tech specific templates
-│
+├── notebooks/                # Jupyter/Hex research notebooks
 ├── config/                   # Configuration files
-├── data/                     # Data storage (gitignored)
 ├── tests/                    # Unit and integration tests
 └── docs/                     # Additional documentation
 ```
 
+## 📊 Performance Reporting Module
+
+The new `src/performance_reporting/` module contains:
+
+- **`qullamaggie_tearsheet.py`**: A standalone Python module that generates the full comprehensive tearsheet. It can be uploaded directly to Hex.tech.
+- **`Master2025_...` files**: The original source for the 60+ custom metrics.
+
+This modular approach keeps Hex.tech cells clean and makes the reporting logic reusable across different strategies and projects.
+
 ## 🎓 Learning Resources
 
-### For Beginners
-
-1. **[Getting Started Guide](docs/getting_started.md)** - Installation and first backtest
-2. **[Data Preparation](VectorBT_Knowledge/data/01_data_preparation.md)** - Understanding data formats
-3. **[Basic Backtest Example](notebooks/examples/03_basic_backtest.ipynb)** - Step-by-step walkthrough
-
-### For Intermediate Users
-
-4. **[Signal Generation Patterns](VectorBT_Knowledge/signals/01_signal_generation.md)** - Creating entry/exit rules
-5. **[Custom Indicators](notebooks/examples/04_custom_indicators.ipynb)** - Building your own indicators
-6. **[Performance Analysis](VectorBT_Knowledge/performance/01_performance_analysis.md)** - Interpreting results
-
-### For Advanced Users
-
-7. **[Parameter Optimization](VectorBT_Knowledge/optimization/01_parameter_optimization.md)** - Grid search techniques
-8. **[Walk-Forward Analysis](notebooks/examples/08_walk_forward.ipynb)** - Out-of-sample testing
-9. **[VectorBT Research Report](docs/vectorbt_research_report.md)** - Deep dive into architecture
-
-## 🔧 Hex.tech Setup
-
-This repository is optimized for Hex.tech notebook environments. See [Hex Setup Guide](config/hex_setup.md) for detailed instructions.
-
-**Key Features for Hex.tech:**
-- Built-in MotherDuck integration
-- Plotly-based interactive visualizations
-- Modular cell structure for imports
-- Caching strategies for expensive operations
-
-## 📊 Current Strategies
-
-### Qullamaggie Trend System
-
-A momentum-based breakout strategy with tight stops and trailing exits. See [strategy documentation](strategies/qullamaggie/README.md) for details.
-
-**Key Features:**
-- Daily trend filter (50 SMA)
-- 5-bar breakout entries
-- SMA-based trailing stops
-- Tested on 56 gold mining stocks + 4 ETFs
-- 53 years of survivorship-bias-free data
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-pytest tests/
-
-# Run with coverage
-pytest --cov=src tests/
-
-# Run specific test file
-pytest tests/test_data_loaders.py
-```
-
-## 📈 Performance Reporting
-
-The repository includes comprehensive performance reporting adapted from industry-standard tearsheet templates:
-
-- **60+ performance metrics** (Sharpe, Sortino, Calmar, etc.)
-- **Visualization suite** (equity curves, drawdowns, heatmaps)
-- **Benchmark comparisons**
-- **Monthly/yearly return tables**
-- **Trade analysis**
-
-See [Performance Module](src/performance/README.md) for details.
+- **[Getting Started Guide](docs/getting_started.md)**
+- **[VectorBT Knowledge Base](VectorBT_Knowledge/README.md)**
+- **[Qullamaggie Strategy Docs](strategies/qullamaggie/README.md)**
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [Contributing Guidelines](docs/contributing.md) for details on:
-
-- Code style and standards
-- Testing requirements
-- Documentation expectations
-- Pull request process
+We welcome contributions! Please see [Contributing Guidelines](docs/contributing.md).
 
 ## 📝 Branch Strategy
 
 - **main**: Core infrastructure and shared components
 - **strategy/qullamaggie**: Qullamaggie trend system
-- **strategy/[name]**: Additional strategies (separate branches)
-- **feature/[name]**: New features or enhancements
-- **fix/[name]**: Bug fixes
-
-## 🔗 Related Projects
-
-- **GoldenOpp Database**: Survivorship-bias-free gold mining stock data (MotherDuck)
-- **VectorBT**: High-performance backtesting library ([vectorbt.dev](https://vectorbt.dev))
-- **Hex.tech**: Collaborative data workspace ([hex.tech](https://hex.tech))
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 📧 Contact
-
-**Obsidian Quantitative**  
-Email: ben@obsidianquantitative.com  
-Project maintained by: OBQ Trading Systems Team
-
-## 🙏 Acknowledgments
-
-- **Kristjan Kullamägi (Qullamaggie)** - Original trading system methodology
-- **VectorBT Team** - Exceptional backtesting framework
-- **MotherDuck** - Cloud-native data warehouse
-- **Manus AI** - Repository structure and documentation assistance
 
 ---
 

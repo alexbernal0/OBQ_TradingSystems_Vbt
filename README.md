@@ -117,3 +117,37 @@ We welcome contributions! Please see [Contributing Guidelines](docs/contributing
 ---
 
 **Built with ❤️ for systematic traders who value speed, reproducibility, and rigor.**
+
+
+## 🎯 Stop Loss & Target Templates
+
+The `StopLoss_templates/` folder contains **22 professional stop loss and profit target methods** converted to VectorBT format.
+
+### Quick Access
+- **📁 Folder**: `StopLoss_templates/`
+- **📖 Documentation**: [`StopLoss_templates/README.md`](StopLoss_templates/README.md)
+- **🎓 Template Count**: 22 methods
+
+### Categories
+1. **Basic Stops** (5) - No stop, fixed %, account %, ATR, dollar
+2. **ATR-Based** (4) - ATR %, target, breakeven, trailing
+3. **Percentage-Based** (3) - % breakeven, trailing, target
+4. **Partial Exits** (3) - Sell half at %, breakeven, ATR
+5. **Advanced** (4) - Account target, target→trail, combined
+6. **Technical** (3) - Chandelier, Parabolic SAR, Quantile
+
+### Key Features
+- ✅ All templates use RSI entry signals (easily swappable)
+- ✅ Complete VectorBT implementation
+- ✅ Performance metrics included
+- ✅ Equity curve visualizations
+- ✅ Detailed documentation on how to customize
+
+### How to Use
+1. Choose a stop method from the 22 templates
+2. Load your OHLC data
+3. (Optional) Swap RSI entry logic with your own signals
+4. Run backtest and analyze results
+
+See the [StopLoss_templates README](StopLoss_templates/README.md) for complete documentation.
+

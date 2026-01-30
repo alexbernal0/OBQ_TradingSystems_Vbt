@@ -1,6 +1,6 @@
 # Stop Loss & Target Templates for VectorBT
 
-This folder contains **22 professional stop loss and profit target templates** converted from Backtrader to VectorBT format. All templates use **RSI as the entry signal**, which is designed to be easily swappable with any other entry logic.
+This folder contains **25 professional stop loss and profit target templates** converted from Backtrader to VectorBT format. All templates use **RSI as the entry signal**, which is designed to be easily swappable with any other entry logic.
 
 ---
 
@@ -73,6 +73,15 @@ Stops based on technical indicators
 - Chandelier Stop
 - Parabolic SAR Stop
 - Quantile Dynamic Stop
+
+### **Advanced Trailing Methods** (2 templates)
+Sophisticated trailing stop variations
+- Time-Delayed Trailing Stop
+- Stepped Trailing Stop
+
+### **Data-Driven Methods** (1 template)
+Historical analysis-based stops
+- Maximum Adverse Excursion (MAE) Stop
 
 ---
 
@@ -235,6 +244,9 @@ for i in range(LOOKBACK, len(df)):
 | 20 | `20_chandelier_stop.py` | Chandelier Stop | ATR volatility stop |
 | 21 | `21_parabolic_sar.py` | Parabolic SAR | SAR trailing stop |
 | 22 | `22_quantile_stop.py` | Quantile Stop | Dynamic quantile-based |
+| 23 | `23_time_delayed_trailing_stop.py` | Time-Delayed Trailing | Waits for confirmation before trailing |
+| 24 | `24_stepped_trailing_stop.py` | Stepped Trailing | Trails in increments, not continuous |
+| 25 | `25_mae_stop.py` | MAE Stop | Data-driven based on historical MAE |
 
 ---
 

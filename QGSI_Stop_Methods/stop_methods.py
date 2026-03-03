@@ -1,8 +1,8 @@
 """
 stop_methods.py — QGSI Stop Method Library
 ===========================================
-12 stop types as pure numpy functions. No backtrader, no class dependencies.
-Source: Stop Methods (1).ipynb — rewritten for vectorized research pipeline.
+15 stop types as pure numpy functions. No backtrader, no class dependencies.
+Sources: Stop Methods (1).ipynb + Kase (2005) + Elder (2002) + Seban Supertrend.
 
 Uniform signature
 -----------------
@@ -36,6 +36,9 @@ Stop types
     10. atr_pct_hybrid        — entry ± (pct×entry + mult×ATR). Adaptive buffer.
     11. tgt_then_trail        — hard ATR stop → trailing ATR stop after target hit.
     12. trailing_atr_with_target — ATR trailing stop + fixed ATR profit target.
+    13. kase_devstop             — Kase (2005): stop = running_extreme − (mean_TRD + dev_mult × std_TRD).
+    14. elder_safezone           — Elder (2002): stop below recent low by coef × avg adverse-bar move.
+    15. supertrend               — Seban: stop = running max of (close − mult × ATR) per bar.
 
 Registry
 --------
@@ -534,6 +537,190 @@ def trailing_atr_with_target(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 13. Kase DevStop
+# ─────────────────────────────────────────────────────────────────────────────
+
+def kase_devstop(
+    entry: float,
+    highs: np.ndarray,
+    lows: np.ndarray,
+    closes: np.ndarray,
+    atrs: np.ndarray,
+    is_long: bool,
+    period: int = 30,
+    dev_mult: float = 2.2,
+) -> np.ndarray:
+    """
+    Kase DevStop (2005).
+
+    Uses the 2-bar Double True Range (TRD) rather than standard ATR:
+        TRD[k] = max(H[k], H[k-1], C[k-2]) - min(L[k], L[k-1], C[k-2])
+
+    Stop distance = mean(TRD, period) + dev_mult × std(TRD, period)
+    Long  stop = running_high - distance   (ratchets upward only)
+    Short stop = running_low  + distance   (ratchets downward only)
+
+    params
+    ------
+    period   : lookback for mean/std of TRD (default 30)
+    dev_mult : standard-deviation multiplier (default 2.2 → ~1-sigma beyond mean)
+    """
+    K = len(closes)
+    stops = np.empty(K)
+
+    # Build extended arrays (need 2 bars before bar 0 for TRD)
+    # Use entry price as synthetic prior closes; entry high/low proxied from atrs
+    prior_close2 = entry
+    prior_close1 = entry
+    prior_high1  = entry + atrs[0] if K > 0 else entry
+    prior_low1   = entry - atrs[0] if K > 0 else entry
+
+    trd_history: list[float] = []
+    running_high = entry
+    running_low  = entry
+
+    for k in range(K):
+        h, l, c = highs[k], lows[k], closes[k]
+
+        # 2-bar double true range
+        trd = max(h, prior_high1, prior_close2) - min(l, prior_low1, prior_close2)
+        trd_history.append(trd)
+        window = trd_history[-period:]
+        mean_trd = float(np.mean(window))
+        std_trd  = float(np.std(window, ddof=1)) if len(window) > 1 else 0.0
+        dist = mean_trd + dev_mult * std_trd
+
+        if is_long:
+            if h > running_high:
+                running_high = h
+            stops[k] = running_high - dist
+        else:
+            if l < running_low:
+                running_low = l
+            stops[k] = running_low + dist
+
+        prior_close2 = prior_close1
+        prior_close1 = c
+        prior_high1  = h
+        prior_low1   = l
+
+    return stops
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 14. Elder SafeZone Stop
+# ─────────────────────────────────────────────────────────────────────────────
+
+def elder_safezone(
+    entry: float,
+    highs: np.ndarray,
+    lows: np.ndarray,
+    closes: np.ndarray,
+    atrs: np.ndarray,
+    is_long: bool,
+    period: int = 14,
+    coef: float = 2.0,
+) -> np.ndarray:
+    """
+    Elder SafeZone Stop (Elder, 2002).
+
+    Counts only directionally-adverse bars within the lookback window:
+        Long  adverse bar: low[k] < low[k-1]  → adverse move = low[k-1] - low[k]
+        Short adverse bar: high[k] > high[k-1] → adverse move = high[k] - high[k-1]
+
+    Stop distance = coef × mean(adverse_moves over period)
+    Long  stop = lowest_low[period]  - distance   (never moves up)
+    Short stop = highest_high[period] + distance  (never moves down)
+
+    params
+    ------
+    period : lookback window (default 14)
+    coef   : multiplier on average adverse move (default 2.0)
+    """
+    K = len(closes)
+    stops = np.empty(K)
+
+    prior_high = entry
+    prior_low  = entry
+
+    for k in range(K):
+        h, l = highs[k], lows[k]
+        start = max(0, k - period + 1)
+
+        if is_long:
+            adverse_moves = []
+            for j in range(start + 1, k + 1):
+                if lows[j] < lows[j - 1]:
+                    adverse_moves.append(lows[j - 1] - lows[j])
+            avg_adv = float(np.mean(adverse_moves)) if adverse_moves else atrs[k]
+            recent_low = float(np.min(lows[start : k + 1]))
+            stops[k] = recent_low - coef * avg_adv
+        else:
+            adverse_moves = []
+            for j in range(start + 1, k + 1):
+                if highs[j] > highs[j - 1]:
+                    adverse_moves.append(highs[j] - highs[j - 1])
+            avg_adv = float(np.mean(adverse_moves)) if adverse_moves else atrs[k]
+            recent_high = float(np.max(highs[start : k + 1]))
+            stops[k] = recent_high + coef * avg_adv
+
+        prior_high = h
+        prior_low  = l
+
+    return stops
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. Supertrend Stop
+# ─────────────────────────────────────────────────────────────────────────────
+
+def supertrend(
+    entry: float,
+    highs: np.ndarray,
+    lows: np.ndarray,
+    closes: np.ndarray,
+    atrs: np.ndarray,
+    is_long: bool,
+    mult: float = 3.0,
+) -> np.ndarray:
+    """
+    Supertrend Stop (Seban, popularised mid-2000s).
+
+    Per-bar band anchored to the current close (not a running extreme):
+        Long  band[k] = close[k] - mult × atr[k]
+        Short band[k] = close[k] + mult × atr[k]
+
+    Stop ratchets monotonically in the trade's favour:
+        Long  stop[k] = max(stop[k-1], band_long[k])   — only moves up
+        Short stop[k] = min(stop[k-1], band_short[k])  — only moves down
+
+    ATR is pre-computed by the caller (EWM span); `period` param is unused
+    here but callers may use it when computing atrs.
+
+    params
+    ------
+    mult : ATR multiplier (default 3.0)
+    """
+    K = len(closes)
+    stops = np.empty(K)
+
+    if is_long:
+        stop = entry - mult * atrs[0]
+        for k in range(K):
+            band = closes[k] - mult * atrs[k]
+            stop = max(stop, band)
+            stops[k] = stop
+    else:
+        stop = entry + mult * atrs[0]
+        for k in range(K):
+            band = closes[k] + mult * atrs[k]
+            stop = min(stop, band)
+            stops[k] = stop
+
+    return stops
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Registry
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -550,4 +737,7 @@ STOP_REGISTRY: dict[str, callable] = {
     'atr_pct_hybrid':          atr_pct_hybrid,
     'tgt_then_trail':          tgt_then_trail,
     'trailing_atr_w_target':   trailing_atr_with_target,
+    'kase_devstop':            kase_devstop,
+    'elder_safezone':          elder_safezone,
+    'supertrend':              supertrend,
 }
